@@ -1,0 +1,11 @@
+﻿{
+  "name": "HPLGAME | کارگاه بازی‌سازی",
+  "short_name": "HPLGAME",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fffafb",
+  "theme_color": "#52132f",
+  "lang": "fa",
+  "dir": "rtl",
+  "icons": []
+}
