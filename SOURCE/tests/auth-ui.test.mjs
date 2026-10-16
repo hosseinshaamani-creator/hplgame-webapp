@@ -1,0 +1,24 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {createApp,wait} from './support/auth-fixture.mjs';
+test('OTP registration/login, auth wall, live validation, eye toggle and duplicate/network errors',{timeout:20000},async t=>{
+ const {w,q,fill,click,submit,navigate,state,requests,errors}=await createApp(t,{onboarding:true});
+ click('start');await wait(50);assert.ok(q('[role="dialog"]'));assert.equal(q('#game-stage'),null);assert.equal(q('#auth-password'),null);
+ click('cancel-auth');await wait(40);assert.equal(q('[role="dialog"]'),null);assert.equal(q('#game-stage'),null);
+ await navigate('signup');fill('fullName','ا');fill('email','invalid');fill('phone','12');fill('password','short');fill('confirm','x');submit();
+ assert.match(q('#auth-error-fullName').textContent,/نام کامل/);assert.match(q('#auth-error-email').textContent,/معتبر/);assert.match(q('#auth-error-phone').textContent,/۱۱ رقم/);assert.equal(requests.some(r=>r.path.endsWith('/signup')),false);
+ const fillSignup=()=>{fill('fullName','نام و نام‌خانوادگی');fill('email','a@example.test');fill('phone','۰۹۱۲۳۴۵۶۷۸۹');fill('password','A-long-test-pass-123!');fill('confirm','A-long-test-pass-123!');q('[name="accountKind"]').value='adult';q('[name="terms"]').checked=true;};fillSignup();
+ const eye=q('[data-target="auth-password"]');assert.ok(eye.querySelector('svg'));assert.equal(eye.textContent,'');eye.click();assert.equal(q('#auth-password').type,'text');eye.click();assert.equal(q('#auth-password').type,'password');
+ state.duplicate=true;submit();await wait(70);assert.match(q('#auth-message').textContent,/قبلاً ثبت/);state.duplicate=false;
+ submit();submit();assert.equal(q('[type="submit"]').disabled,true);await wait(80);
+ assert.equal(requests.filter(r=>r.path.endsWith('/signup')).length,2);assert.equal(requests.at(-1).body.data.phone,'+989123456789');assert.equal(requests.at(-1).body.data.full_name,'نام و نام‌خانوادگی');
+ assert.equal(q('#auth-password'),null);assert.ok(q('#auth-otp'));assert.equal(q('[data-action="resend-otp"]').disabled,true);assert.match(q('#otp-countdown').textContent,/ثانیه/);
+ fill('otp','999999');submit();await wait(70);assert.match(q('#auth-message').textContent,/نادرست یا منقضی/);assert.equal(q('#game-stage'),null);
+ fill('otp','۱۲۳۴۵۶');submit();await wait(200);assert.match(q('h1').textContent,/نام و نام‌خانوادگی/);assert.equal(requests.find(r=>r.path.endsWith('/verify')&&r.body.token==='123456').body.type,'signup');
+ assert.equal(q('#admin-rows'),null);await navigate('admin');assert.match(q('h1').textContent,/دسترسی مجاز نیست/);assert.equal(requests.some(r=>r.path.endsWith('/rpc/admin_users')),false);
+ click('logout');await wait(80);await navigate('projects');assert.ok(q('[role="dialog"]'));assert.equal(q('#auth-password'),null);assert.equal(q('[name="fullName"]'),null);
+ state.offline=true;fill('email','a@example.test');submit();await wait(70);assert.match(q('#auth-message').textContent,/اینترنت/);state.offline=false;
+ submit();await wait(70);assert.equal(requests.filter(r=>r.path.endsWith('/otp')).at(-1).body.create_user,false);fill('otp','123456');submit();await wait(180);assert.match(q('h1').textContent,/بازی‌های من/);
+ assert.equal(requests.filter(r=>r.path.endsWith('/verify')).at(-1).body.type,'email');
+ const stored=[w.localStorage,w.sessionStorage].flatMap(storage=>Array.from({length:storage.length},(_,i)=>storage.getItem(storage.key(i)))).join('');assert.equal(stored.includes('A-long-test-pass'),false);assert.equal(stored.includes('123456"'),false);
+ assert.deepEqual(errors,[]);
+});

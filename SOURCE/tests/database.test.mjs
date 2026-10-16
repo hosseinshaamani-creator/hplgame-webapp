@@ -1,0 +1,38 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';import {PGlite} from '@electric-sql/pglite';
+test('real PostgreSQL migration and RLS with two users and administrator',async t=>{
+  const db=new PGlite();
+  t.after(()=>db.close());
+  await db.exec(`create role anon;create role authenticated;create schema auth;
+  create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb);
+  create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+  create function auth.role() returns text language sql stable as $$select current_setting('request.jwt.claim.role',true)$$;
+  grant usage on schema public,auth to anon,authenticated;grant execute on function auth.uid(),auth.role() to anon,authenticated;`);
+  await db.exec(await readFile(new URL('../supabase/migrations/202610090001_hplgame.sql',import.meta.url),'utf8'));
+  const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000000002',ADMIN='00000000-0000-4000-8000-000000000003';
+  for(const [id,email,phone]of [[A,'a@example.test','+989123456789'],[B,'b@example.test','+989123456780'],[ADMIN,'admin@example.test',null]])await db.query(`insert into auth.users values($1,$2,$3::jsonb)`,[id,email,JSON.stringify({phone,account_kind:'adult',terms_version:'2026-10-09',role:'admin'})]);
+  assert.equal((await db.query('select role from public.profiles where id=$1',[A])).rows[0].role,'student');
+  await assert.rejects(db.query(`insert into auth.users values('00000000-0000-4000-8000-000000000004','duplicate@example.test',$1::jsonb)`,[JSON.stringify({phone:'+989123456789',account_kind:'adult',terms_version:'2026-10-09'})]));
+  await assert.rejects(db.query(`insert into auth.users values('00000000-0000-4000-8000-000000000004','A@example.test',$1::jsonb)`,[JSON.stringify({phone:'+989123456777',account_kind:'adult',terms_version:'2026-10-09'})]));
+  await db.query(`update public.profiles set role='admin' where id=$1`,[ADMIN]);
+  async function as(id,role='authenticated'){await db.exec('reset role');await db.query(`select set_config('request.jwt.claim.sub',$1,false),set_config('request.jwt.claim.role',$2,false)`,[id,role]);await db.exec('set role '+role);}
+  await as(A);assert.equal((await db.query('select * from public.profiles')).rows.length,1);
+  await assert.rejects(db.query(`update public.profiles set role='admin' where id=$1`,[A]));
+  await db.query(`update public.profiles set display_name='test',onboarding_completed=true where id=$1`,[A]);
+  const P='10000000-0000-4000-8000-000000000001';
+  await db.query(`insert into public.projects(id,user_id,title,project_data) values($1,$2,'safe',$3::jsonb)`,[P,A,JSON.stringify({lesson_id:'first-star',settings:{speed:3,jump:4,starScore:10}})]);
+  await assert.rejects(db.query(`insert into public.projects(user_id,title,project_data) values($1,'fake',$2::jsonb)`,[B,JSON.stringify({lesson_id:'first-star',settings:{speed:3,jump:4,starScore:10}})]));
+  await assert.rejects(db.query(`update public.projects set project_data=$1::jsonb where id=$2`,[JSON.stringify({lesson_id:'first-star',settings:{speed:3,jump:99999,starScore:10}}),P]));
+  await db.query(`update public.projects set title='new' where id=$1 and version=1`,[P]);assert.equal((await db.query(`select version from public.projects where id=$1`,[P])).rows[0].version,2);
+  assert.equal((await db.query(`update public.projects set title='conflict' where id=$1 and version=1 returning id`,[P])).rows.length,0);
+  await assert.rejects(db.query(`select public.record_progress('careful-jump','completed',10,10)`));
+  await db.query(`select public.record_progress('first-star','completed',10,10)`);await db.query(`select public.record_progress('first-star','completed',10,10)`);
+  assert.equal((await db.query('select xp from public.progress')).rows[0].xp,50);
+  await assert.rejects(db.query(`update public.progress set xp=999 where user_id=$1`,[A]));
+  await assert.rejects(db.query(`select public.admin_users()`));
+  await db.query(`insert into public.deletion_requests(user_id) values($1)`,[A]);
+  await as(B);assert.equal((await db.query('select * from public.projects')).rows.length,0);assert.equal((await db.query('select * from public.progress')).rows.length,0);assert.equal((await db.query('select * from public.deletion_requests')).rows.length,0);
+  assert.equal((await db.query(`update public.projects set title='stolen' where id=$1 returning id`,[P])).rows.length,0);assert.equal((await db.query(`delete from public.projects where id=$1 returning id`,[P])).rows.length,0);
+  await assert.rejects(db.query(`select public.admin_users()`));
+  await as(ADMIN);const summary=(await db.query(`select public.admin_users() result`)).rows[0].result;assert.equal(summary.total,3);assert.equal(summary.rows.length,3);assert.equal((await db.query('select * from public.deletion_requests')).rows.length,1);
+  await as('', 'anon');assert.equal((await db.query('select * from public.lessons')).rows.length,2);await assert.rejects(db.query('select * from public.profiles'));await assert.rejects(db.query(`select public.record_progress('first-star','completed',10,10)`));
+});
