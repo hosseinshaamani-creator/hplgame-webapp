@@ -5,7 +5,7 @@ const root=resolve(import.meta.dirname,'..');
 const output=resolve(root,'dist');
 // Only delete the known generated build directory inside this project.
 await rm(output,{recursive:true,force:true});await mkdir(output,{recursive:true});
-for(const file of ['index.html','styles.css','manifest.webmanifest','Vazirmatn-Regular.ttf','Vazirmatn-Bold.ttf','.nojekyll'])await copyFile(resolve(root,file),resolve(output,file));
+for(const file of ['index.html','styles.css','discovery.css','manifest.webmanifest','Vazirmatn-Regular.ttf','Vazirmatn-Bold.ttf','.nojekyll'])await copyFile(resolve(root,file),resolve(output,file));
 let env={};for(const file of ['.env','.env.local']){try{Object.assign(env,Object.fromEntries((await readFile(resolve(root,file),'utf8')).split(/\r?\n/).filter(l=>l&&!l.startsWith('#')&&l.includes('=')).map(l=>{let i=l.indexOf('=');return[l.slice(0,i).trim(),l.slice(i+1).trim().replace(/^['"]|['"]$/g,'')];})));}catch{}}
 const url=process.env.VITE_SUPABASE_URL||process.env.SUPABASE_URL||env.VITE_SUPABASE_URL||env.SUPABASE_URL||'',key=process.env.VITE_SUPABASE_ANON_KEY||process.env.SUPABASE_ANON_KEY||env.VITE_SUPABASE_ANON_KEY||env.SUPABASE_ANON_KEY||'';
 if(key.startsWith('sb_secret_'))throw new Error('A secret key must never enter the frontend.');
