@@ -1,0 +1,5 @@
+SOURCE/node_modules/
+SOURCE/dist/
+SOURCE/.env
+SOURCE/.env.*
+!SOURCE/.env.example
