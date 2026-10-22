@@ -1,6 +1,7 @@
 import { build } from 'esbuild';
 import { mkdir,copyFile,writeFile,readFile,rm } from 'node:fs/promises';
 import {resolve} from 'node:path';
+import {createHash} from 'node:crypto';
 const root=resolve(import.meta.dirname,'..');
 const output=resolve(root,'dist');
 // Only delete the known generated build directory inside this project.
@@ -12,4 +13,11 @@ if(key.startsWith('sb_secret_'))throw new Error('A secret key must never enter t
 if(key.split('.').length===3){try{if(JSON.parse(Buffer.from(key.split('.')[1],'base64url')).role==='service_role')throw new Error('service_role is forbidden in frontend');}catch(e){if(e.message.includes('forbidden'))throw e;}}
 if(url&&!/^https:\/\/[^/]+\.supabase\.co$/.test(url))throw new Error('Invalid Supabase project URL');
 await build({entryPoints:[resolve(root,'app.js')],bundle:true,splitting:true,format:'esm',target:'es2022',outdir:output,chunkNames:'chunks/[name]-[hash]',minify:true,plugins:[{name:'public-config',setup(builder){builder.onLoad({filter:/[\\/]config\.js$/},()=>({contents:`export const config=${JSON.stringify({supabaseUrl:url,supabaseAnonKey:key,basePath:process.env.APP_BASE_PATH||env.APP_BASE_PATH||'/hplgame-webapp/'})};`,loader:'js'}));}}]});
+// Stable content versions prevent returning visitors from loading a previous release.
+let html=await readFile(resolve(output,'index.html'),'utf8');
+for(const file of ['app.js','styles.css','discovery.css']){
+  const version=createHash('sha256').update(await readFile(resolve(output,file))).digest('hex').slice(0,12);
+  html=html.replace(`"${file}"`,`"${file}?v=${version}"`);
+}
+await writeFile(resolve(output,'index.html'),html);
 console.log(`Production build ready: dist (online accounts: ${!!url&&!!key})`);
