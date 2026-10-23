@@ -22,3 +22,17 @@ html[data-theme=dark] .sidebar{background:#270d1e}html[data-theme=dark] .brand-m
 html[data-theme=dark] .mobile-nav{background:var(--surface);border-color:var(--line)}html[data-theme=dark] .mobile-nav-item{color:var(--muted)}html[data-theme=dark] .mobile-nav-item.active{color:#f5bbd0;background:var(--soft)}html[data-theme=dark] .avatar{color:#3c041f}
 
 @media(max-width:800px){.hopi-launch{position:static;margin:0 15px 100px;max-width:calc(100% - 30px)}}
+
+/* Week two: an editable idea with one clear next action. */
+.idea-composer:focus-within{border-color:var(--berry);box-shadow:0 0 0 3px var(--soft),0 15px 35px #87234112}
+.idea-input-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--page)}
+.idea-input-row textarea{margin:0;min-height:84px;max-height:280px;padding:8px;background:transparent;min-width:0}
+.idea-start{min-height:50px;white-space:nowrap;gap:16px;border-radius:11px;box-shadow:0 3px 0 #872341;padding:12px 20px}
+.idea-composer .idea-examples{justify-content:flex-start;margin:14px 0 18px}
+.idea-composer .example-chip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:8px 14px;border-radius:24px;font-size:.78rem}
+.example-chip[aria-pressed=true]{border-color:var(--berry);background:var(--soft);box-shadow:inset 0 0 0 1px var(--berry)}
+.example-chip>span{font-size:1rem;color:var(--berry)}
+.idea-composer .idea-preferences{border-top:1px solid var(--line);padding-top:16px;margin-bottom:14px}
+#idea-help{display:block;color:var(--muted);font-size:.73rem}
+#game-idea[aria-invalid=true]{outline:2px solid var(--berry);outline-offset:2px}
+@media(max-width:540px){.idea-input-row{grid-template-columns:minmax(0,1fr);gap:10px;padding:10px}.idea-input-row textarea{min-height:95px}.idea-start{width:100%;justify-content:center}.idea-composer .idea-examples{gap:6px}.idea-composer .example-chip{font-size:.73rem;padding:7px 11px}.idea-composer .idea-examples>span{width:auto;margin-left:4px}#idea-help{font-size:.69rem}}
