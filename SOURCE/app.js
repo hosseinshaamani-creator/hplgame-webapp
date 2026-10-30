@@ -2,6 +2,7 @@ import {fa,escapeHTML as esc,defaults,fields,lessons,validateValue,cleanSettings
 import {Game,WORLD} from './lib/game.js';
 import {configured,getClient,friendlyError,getAccountData,saveProject,recordProgress,redirectURL} from './lib/backend.js';
 import {discoveryHome,discoveryIdea,discoveryResearch,bindDiscovery,initTheme} from './lib/discovery.js';
+import {prototypePage,bindPrototype} from './lib/prototype.js';
 
 initTheme();
 
@@ -51,7 +52,7 @@ function shell(content){
 function render(){
   stopAnimation();
   const viewRoute=isProtectedRoute(route)&&!user?'login':route;
-  const content=viewRoute.startsWith('workshop/')?workshop():({'':home,idea:discoveryIdea,research:discoveryResearch,learn:learning,dashboard,projects:projectList,help,privacy,terms,admin})[viewRoute]?.()||authPage(viewRoute);
+  const content=viewRoute.startsWith('studio/')?prototypePage(viewRoute):viewRoute.startsWith('workshop/')?workshop():({'':home,idea:discoveryIdea,research:discoveryResearch,learn:learning,dashboard,projects:projectList,help,privacy,terms,admin})[viewRoute]?.()||authPage(viewRoute);
   const authModal=!user&&pendingIntent&&['login','signup','otp'].includes(viewRoute);
   app.innerHTML=shell(authModal?home():content);
   if(authModal){
@@ -132,6 +133,7 @@ function restart(){closeModal();game=new Game(draft,currentLesson().id);paintGam
 function bindActions(root=document){root.querySelectorAll('[data-action]').forEach(el=>el.addEventListener('click',()=>handleAction(el.dataset.action,el)));}
 function bind(){
   bindDiscovery({navigate,render,toast});
+  bindPrototype({navigate,render,toast});
   bindActions();document.querySelector('.skip')?.addEventListener('click',e=>{e.preventDefault();document.querySelector('#main-content').focus();});
   document.querySelectorAll('[data-setting]').forEach(el=>el.addEventListener('input',()=>updateSetting(el.dataset.setting,el.value,el)));
   document.querySelector('#sound')?.addEventListener('change',e=>sound=e.target.checked);
