@@ -13,7 +13,8 @@ function mascot(){return '<div class="hopi-bot" aria-hidden="true"><div class="b
 const ideaPresets=[
  {label:'دوز',icon:'✕',text:'می‌خواهم یک بازی دوز بسازم که دو بازیکن با علامت‌های X و O رقابت کنند.'},
  {label:'مار (Snake)',icon:'↝',text:'می‌خواهم بازی مار (Snake) بسازم که با خوردن غذا بزرگ شود و به دیوار برخورد نکند.'},
- {label:'فلپی برد',icon:'◒',text:'می‌خواهم یک بازی فلپی برد بسازم که پرنده با هر کلیک بپرد و از بین لوله‌ها رد شود.'}
+ {label:'فلپی برد',icon:'◒',text:'می‌خواهم یک بازی فلپی برد بسازم که پرنده با هر کلیک بپرد و از بین لوله‌ها رد شود.'},
+ {label:'پازل اعداد',icon:'⑥',text:'می‌خواهم یک پازل اعداد بسازم که اعداد ۱ تا ۶ را به ترتیب انتخاب کنم.'}
 ];
 function ideaComposer(){return `<form id="idea-form" class="idea-composer" novalidate>
  <label for="game-idea">چه بازی‌ای می‌خواهی بسازی؟ <span aria-hidden="true">✦</span></label>
