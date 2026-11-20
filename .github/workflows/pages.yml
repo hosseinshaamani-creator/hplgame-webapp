@@ -26,9 +26,10 @@ jobs:
       - run: npm run test:ci
       - run: npm run build
         env:
-          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || vars.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY || vars.SUPABASE_ANON_KEY }}
           APP_BASE_PATH: /hplgame-webapp/
+      - run: npm run prepare:pages
       - uses: actions/upload-pages-artifact@v3
         with:
           path: SOURCE/dist
