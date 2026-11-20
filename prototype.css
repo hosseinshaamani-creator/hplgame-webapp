@@ -6,3 +6,13 @@
 .proto-backdrop{position:fixed;inset:0;z-index:300;background:#160d14b8;display:grid;place-items:center;padding:18px}.proto-dialog{width:min(100%,500px);max-height:90vh;overflow:auto;margin:0;box-shadow:0 24px 80px #0005}.proto-dialog h2{font-size:1.5rem}.proto-dialog>button:first-child{float:left}.proto-dialog>button{margin:8px 0}.proto-dialog .badge{display:block;white-space:normal}.proto-dialog ul{line-height:2.3}.proto-dialog p{line-height:2;color:var(--muted)}
 .proto-tabs~.panel .section-head{flex-wrap:wrap;align-items:flex-start}.proto-tabs~.panel .section-head>div{flex:1;min-width:180px}.proto-tabs~.panel .section-head>.btn{flex-shrink:0;white-space:nowrap}
 @media(max-width:800px){.proto-columns{grid-template-columns:1fr}.proto-heading{align-items:flex-start;flex-direction:column}.proto-entry{flex-direction:column;align-items:stretch}.proto-tabs{gap:6px}.proto-tabs .btn{font-size:.75rem;min-width:90px}.proto-heading h1{font-size:1.5rem}.proto-columns .chat-messages{min-height:140px}.proto-controls{gap:5px}.proto-controls button{padding:8px}.proto-auth{margin:12px auto}}
+
+/* Week 4: keyboard focus, puzzle touch controls and narrow screens. */
+:where(.proto-workspace,.proto-tabs,.proto-dialog,.proto-heading,.proto-empty) :is(button,a,input,textarea):focus-visible,#proto-canvas:focus-visible{outline:3px solid var(--wine);outline-offset:4px;box-shadow:0 0 0 7px var(--soft)}
+.proto-number-pad{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-block:16px;direction:ltr}
+.proto-number-pad .btn,.proto-quick .btn,.proto-auth-tabs .btn{min-height:48px}
+.proto-number-pad .btn{min-width:0;font-size:1.1rem}
+.proto-board-jump{margin-block-start:12px}
+#proto-step{font-weight:700;color:var(--wine)}
+.proto-workspace .chat-messages{overscroll-behavior:contain;scrollbar-gutter:stable}
+@media(max-width:480px){.proto-number-pad{grid-template-columns:repeat(3,minmax(0,1fr))}.proto-workspace>.panel{padding:16px}.proto-workspace .chat-messages{min-height:160px;max-height:280px}.proto-workspace .chat-heading{flex-wrap:wrap}}
