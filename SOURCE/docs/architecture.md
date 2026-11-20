@@ -1,3 +1,9 @@
+# معماری فعال هفتهٔ پنجم
+
+در بیلد آنلاین، Auth رسمی Supabase، profiles و learning_projects منبع حقیقت‌اند. prototype.js از configurePrototype به حساب واقعی وصل می‌شود؛ یادگیری در حافظه و صف learning-store.js نگه داشته و از RPC save_learning_project ذخیره می‌شود. user_id از auth.uid به‌دست می‌آید؛ client نمی‌تواند مالک، entitlement یا نسخه را دور بزند. learning_projects شامل id، user_id، idea، step، won، messages، version و زمان‌هاست؛ messages آرایهٔ محدود role/text است. entitlement فقط خواندنی است. سیاست نگهداری و محدودیت staging در WEEK-5-DELIVERY.md آمده‌اند.
+
+LocalStorage فقط برای نشست رسمی، تم و داده‌های نمونهٔ قدیمی است؛ دادهٔ نمونه به حساب آنلاین منتقل نمی‌شود. شرح زیر مربوط به نسخهٔ محلی هفتهٔ سوم است.
+
 # معماری و مدل دادهٔ HPLGAME — هفتهٔ سوم، نسخهٔ اصلاح‌شده
 
 تاریخ: ۳۰ اکتبر ۲۰۲۶. این سند رفتار پیاده‌سازی‌شده را از طرح سروری آینده جدا می‌کند.
