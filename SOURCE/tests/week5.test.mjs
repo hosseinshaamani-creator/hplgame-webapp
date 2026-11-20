@@ -1,0 +1,21 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {createApp,wait} from './support/auth-fixture.mjs';
+test('week 5: password login, recovery request, profile, cloud coach saving and logout isolation',{timeout:20000},async t=>{
+  const {w,q,fill,submit,navigate,state,requests,click,errors}=await createApp(t,{onboarding:true});
+  w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({}, {get:(_target,key)=>key==='canvas'?null:()=>{}});
+  await navigate('reset');assert.equal(q('#auth-password'),null);assert.match(q('h1').textContent,/بازیابی/);
+  await navigate('forgot');fill('email','bad');submit();assert.match(q('#auth-error-email').textContent,/معتبر/);
+  fill('email','a@example.test');submit();await wait(80);assert.ok(requests.some(r=>r.path.endsWith('/recover')));assert.match(q('#auth-message').textContent,/پیوند بازیابی/);
+  await navigate('password-login');fill('email','a@example.test');fill('password','wrong');submit();await wait(80);assert.match(q('#auth-message').textContent,/درست نیست/);
+  fill('password','A-long-test-pass-123!');submit();await wait(200);assert.ok(q('#profile-form'));
+  q('[name=displayName]').value='نام تازه';q('#profile-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await wait(60);
+  assert.equal(state.profile.display_name,'نام تازه');assert.match(q('.profile-card').textContent,/نام تازه/);
+  await navigate('studio/coach');q('#proto-idea').value='پازل اعداد';q('#proto-first-idea').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await wait(70);
+  q('[data-proto=next]').click();await wait(600);assert.equal(state.learning.length,1);assert.equal(state.learning[0].step,1);
+  assert.equal(w.localStorage.getItem('hplgame-prototype-v1'),null);
+  q('[data-proto=new]').click();assert.equal(q('#proto-upgrade').disabled,true);q('[data-close]').click();
+  click('logout');await wait(100);await navigate('studio/games');assert.ok(q('#auth-form'));assert.equal(q('[data-open-game]'),null);
+  await navigate('password-login');fill('email','a@example.test');fill('password','A-long-test-pass-123!');submit();await wait(200);
+  await navigate('studio/coach');assert.match(q('#proto-step').textContent,/گام ۲/);assert.match(q('[role=log]').textContent,/پازل اعداد/);
+  const stored=Array.from({length:w.localStorage.length},(_,i)=>w.localStorage.getItem(w.localStorage.key(i))).join('');assert.equal(stored.includes('A-long-test-pass'),false);assert.deepEqual(errors,[]);
+});

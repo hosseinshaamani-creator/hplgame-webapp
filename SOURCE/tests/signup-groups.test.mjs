@@ -1,0 +1,25 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createApp,wait} from './support/auth-fixture.mjs';
+import {validateSignup} from '../lib/model.js';
+test('signup groups: adult, guardian and supervised minor; meaningful SMTP errors',async t=>{
+ const {w,q,fill,submit,navigate,state,requests,errors}=await createApp(t);
+ await navigate('signup');
+ const kinds=Array.from(q('[name=accountKind]').options).map(o=>o.value);
+ assert.deepEqual(kinds,['','minor','adult','guardian']);
+ fill('fullName','هنرجوی تست');fill('email','guardian@example.test');fill('phone','09123456781');
+ fill('password','A-long-test-pass-123!');fill('confirm','A-long-test-pass-123!');q('[name=terms]').checked=true;
+ q('[name=accountKind]').value='minor';q('[name=accountKind]').dispatchEvent(new w.Event('change',{bubbles:true}));
+ assert.equal(q('#guardian-fields').hidden,false);assert.equal(q('label[for=auth-email]').textContent,'ایمیل سرپرست');
+ submit();assert.match(q('#auth-error-guardianConsent').textContent,/سرپرست/);assert.equal(requests.some(r=>r.path.endsWith('/signup')),false);
+ fill('guardianName','سرپرست تست');q('[name=guardianConsent]').checked=true;
+ state.mailError=true;submit();await wait(80);assert.match(q('#auth-message').textContent,/سرویس ایمیل/);
+ state.mailError=false;submit();await wait(80);assert.ok(q('#auth-otp'));
+ const data=requests.filter(r=>r.path.endsWith('/signup')).at(-1).body.data;
+ assert.equal(data.account_kind,'minor');assert.equal(data.guardian_consent,true);assert.equal(data.guardian_name,'سرپرست تست');
+ const valid={email:'a@example.test',phone:'09123456789',password:'A-long-test-pass-123!',confirm:'A-long-test-pass-123!',terms:true};
+ for(const accountKind of ['adult','guardian'])assert.deepEqual(validateSignup({...valid,accountKind}).errors,{});
+ assert.ok(validateSignup({...valid,accountKind:'minor'}).errors.guardianConsent);
+ q('[data-action=cancel-auth]').click();await wait(50);
+ assert.deepEqual(errors,[]);
+});
