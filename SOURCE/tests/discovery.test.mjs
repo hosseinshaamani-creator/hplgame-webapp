@@ -41,7 +41,7 @@ test('week-two presets remain editable, short game names start a path, and both 
  function render(){q('main').innerHTML='<button id="theme-toggle" aria-pressed="'+(w.document.documentElement.dataset.theme==='dark')+'">تغییر تم</button>'+(route==='home'?mod.discoveryHome():mod.discoveryIdea());mod.bindDiscovery({render,navigate:r=>{route=r;render();},toast:()=>{}});}
  const submit=()=>q('#idea-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
  mod.initTheme();render();assert.equal(q('label[for=game-idea]').textContent.trim(),'چه بازی‌ای می‌خواهی بسازی؟ ✦');
- const pills=[...w.document.querySelectorAll('[data-example]')];assert.deepEqual(pills.map(b=>b.textContent.trim().replace(/^\S+\s/,'')),['دوز','مار (Snake)','فلپی برد']);
+ const pills=[...w.document.querySelectorAll('[data-example]')];assert.deepEqual(pills.map(b=>b.textContent.trim().replace(/^\S+\s/,'')),['دوز','مار (Snake)','فلپی برد','پازل اعداد']);
  for(const pill of pills){pill.click();assert.equal(route,'home');assert.equal(q('#game-idea').value,pill.dataset.example);assert.equal(w.document.activeElement,q('#game-idea'));assert.equal(w.document.querySelectorAll('[data-example][aria-pressed=true]').length,1);}
  q('#game-idea').value=' ';submit();assert.equal(route,'home');assert.equal(q('#game-idea').getAttribute('aria-invalid'),'true');
  pills[0].click();assert.equal(q('#game-idea').getAttribute('aria-invalid'),null);assert.equal(q('#idea-error').textContent,'');
