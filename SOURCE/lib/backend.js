@@ -5,12 +5,16 @@ export async function getClient() {
   if (!configured) throw new Error('سرویس حساب هنوز تنظیم نشده است. راهنمای اتصال Supabase را ببین.');
   if (!clientPromise) clientPromise = (async () => {
     const { createClient } = await import('@supabase/supabase-js');
-    return createClient(config.supabaseUrl,config.supabaseAnonKey,{auth:{persistSession:true,storage:sessionStorage,flowType:'pkce',autoRefreshToken:true,detectSessionInUrl:true}});
+    return createClient(config.supabaseUrl,config.supabaseAnonKey,{auth:{persistSession:true,storage:localStorage,flowType:'pkce',autoRefreshToken:true,detectSessionInUrl:true}});
   })();
   try { return await clientPromise; } catch (error) { clientPromise = null; throw error; }
 }
 export function friendlyError(error) {
   const message=String(error?.message||'');
+  if(/Error sending confirmation email|Error sending.*email|smtp|535|BadCredentials/i.test(message)) return 'ارسال ایمیل تأیید انجام نشد؛ تنظیمات سرویس ایمیل HPLGAME نیاز به اصلاح دارد. کمی بعد دوباره تلاش کن.';
+  if(/Database error saving new user/i.test(message)) return 'ساخت پروفایل انجام نشد؛ نام، موبایل و نوع حساب را بررسی کن. اگر اطلاعات درست است، مدیر باید تنظیمات ثبت‌نام را اصلاح کند.';
+  if(error?.code==='42P01'||/learning_projects.*does not exist/.test(message)) return 'ساختار ذخیرهٔ پیشرفت هنوز روی سرور نصب نشده است؛ مدیر باید migration هفتهٔ پنجم را اجرا کند.';
+  if(/recovery_required/.test(message)) return 'پیوند بازیابی معتبر لازم است؛ از صفحهٔ بازیابی درخواست تازه بفرست.';
   if(/email_confirmation_required/i.test(message)) return 'تأیید ایمیل در Supabase غیرفعال است؛ مدیر باید Confirm email را فعال کند.';
   if(/otp_expired|token.*expired|invalid.*token|token.*invalid|token.*used/i.test(message)||error?.code==='otp_expired') return 'کد نادرست یا منقضی شده است. کد تازه بگیر و دوباره تلاش کن.';
   if(/profile_unavailable/i.test(message)) return 'پروفایل دریافت نشد؛ اتصال و اجرای هر دو migration را بررسی کن.';

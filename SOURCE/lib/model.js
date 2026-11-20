@@ -35,7 +35,11 @@ export function validateSignup(data) {
   if (String(data.password).length < 12 || String(data.password).length > 128) errors.password = 'رمز باید بین ۱۲ تا ۱۲۸ نویسه باشد.';
   if (data.password !== data.confirm) errors.confirm = 'تکرار رمز با رمز برابر نیست.';
   if (!data.terms) errors.terms = 'پذیرش قوانین و حریم خصوصی لازم است.';
-  if (!['adult','guardian'].includes(data.accountKind)) errors.accountKind = 'فعلاً حساب آنلاین فقط برای بزرگسال یا والد در دسترس است.';
+  if (!['adult','guardian','minor'].includes(data.accountKind)) errors.accountKind = 'نوع حساب را انتخاب کن.';
+  if (data.accountKind === 'minor') {
+    if (!data.guardianConsent) errors.guardianConsent = 'تأیید سرپرست برای حساب زیر ۱۸ سال لازم است.';
+    if (String(data.guardianName || '').trim().length < 2 || String(data.guardianName || '').trim().length > 80) errors.guardianName = 'نام سرپرست را بین ۲ تا ۸۰ نویسه بنویس.';
+  }
   return { errors, email, phone };
 }
 export function passwordStrength(password) {
