@@ -1,12 +1,13 @@
 name: Verify HPLGAME source
 on:
   push:
-    branches: [main]
   pull_request:
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
   verify:
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -19,5 +20,5 @@ jobs:
           cache: npm
           cache-dependency-path: SOURCE/package-lock.json
       - run: npm ci
-      - run: npm test
+      - run: npm run test:ci
       - run: npm run build

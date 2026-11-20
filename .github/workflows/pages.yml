@@ -10,6 +10,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -22,7 +23,7 @@ jobs:
           cache: npm
           cache-dependency-path: SOURCE/package-lock.json
       - run: npm ci
-      - run: npm test
+      - run: npm run test:ci
       - run: npm run build
         env:
           SUPABASE_URL: ${{ vars.SUPABASE_URL }}
@@ -33,6 +34,7 @@ jobs:
           path: SOURCE/dist
   deploy:
     needs: build
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     permissions:
       pages: write
