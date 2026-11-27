@@ -27,14 +27,6 @@ export function bindLearningHome({navigate,prepareIdea}){
     const path=learningPaths.find(path=>path.id===button.dataset.learningPath);
     if(!path)return;
     prepareIdea(path.idea);
-    navigate('');
-    requestAnimationFrame(()=>{
-      const input=document.querySelector('#game-idea');
-      if(!input)return;
-      const details=input.closest('details');
-      if(details)details.open=true;
-      input.focus();
-      input.scrollIntoView?.({block:'center',behavior:'smooth'});
-    });
+    navigate('','#game-idea');
   }));
 }
