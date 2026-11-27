@@ -94,7 +94,9 @@ function authPage(mode){
 }
 function admin(){if(!user||profile?.role!=='admin')return '<h1>دسترسی مجاز نیست</h1><p>پنل مدیری فقط برای مدیر تأییدشده در دیتابیس تازه است.</p>';return `<h1>مدیریت HPLGAME</h1><p>دسترسی در دیتابیس بررسی می‌شود؛ هیچ رمزی در این پنل نیست.</p><form id="admin-form" class="admin-search"><label for="admin-search">جست‌وجوی نام، ایمیل یا موبایل</label><input id="admin-search" name="search" type="search" maxlength="80"><label for="admin-role">نقش</label><select id="admin-role" name="role"><option value="">همه</option><option value="student">دانش‌آموز</option><option value="admin">مدیر</option></select><button class="btn primary">جست‌وجو</button></form><p id="admin-status" role="status">در حال دریافت…</p><div class="table-wrap"><table><caption>کاربران مجاز</caption><thead><tr><th>نام و نام‌خانوادگی</th><th>ایمیل تأییدشده</th><th>موبایل</th><th>عضویت</th><th>نقش</th><th>آخرین فعالیت آموزشی</th><th>پیشرفت</th></tr></thead><tbody id="admin-rows"></tbody></table></div><div class="admin-actions">${button('صفحه قبل','admin-prev')}${button('صفحه بعد','admin-next')}${button('خروجی CSV صفحه فعلی','admin-csv')}</div><section class="panel"><h2>درخواست‌های حذف داده</h2><div id="deletion-requests">در حال دریافت…</div><p>حذف نهایی پس از احراز مالکیت، در پنل امن Supabase انجام شود.</p></section>`;}
 function toast(text){const e=document.querySelector('#toast');if(e)e.textContent=text;}
-function navigate(path){if(location.hash==='#/'+path){route=path;render();}else location.hash='#/'+path;}
+let routeFocus=null;
+function focusDestination(){const requested=!!routeFocus,target=document.querySelector(routeFocus||'#main-content');routeFocus=null;if(!target)return;const details=target.closest('details');if(details)details.open=true;target.focus({preventScroll:true});if(requested)target.scrollIntoView?.({block:'center',behavior:'smooth'});else window.scrollTo(0,0);}
+function navigate(path,focus=null){routeFocus=focus;if(location.hash==='#/'+path){route=path;render();if(focus)focusDestination();}else location.hash='#/'+path;}
 function stopAnimation(){cancelAnimationFrame(frame);lastFrame=0;}
 function resetInput(){Object.keys(input).forEach(k=>input[k]=false);}
 function pauseGame(){if(game?.status==='running')game.stop();stopAnimation();resetInput();paintGame();}
@@ -283,7 +285,7 @@ async function routeChanged(){
   if(pendingCompletion&&!await saveCompletion()){location.hash=acceptedHash;routing=false;return;}
   pauseGame();route=next;acceptedHash=location.hash;
   if(route.startsWith('workshop/')){const id=route.slice(9);if(active?.id!==id){const p=projects.find(p=>p.id===id);if(p){active=p;draft={...p.project_data.settings};game=new Game(draft,currentLesson().id);}else route='projects';}}
-  render();if(!document.querySelector('[aria-modal="true"]'))document.querySelector('#main-content')?.focus({preventScroll:true});window.scrollTo(0,0);routing=false;
+  render();if(!document.querySelector('[aria-modal="true"]'))focusDestination();routing=false;
 }
 window.addEventListener('hashchange',routeChanged);
 window.addEventListener('beforeunload',e=>{if(dirty||pendingCompletion||learningStore?.hasPending()){e.preventDefault();e.returnValue='';}});
