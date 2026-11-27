@@ -19,13 +19,13 @@ test('week 6 overview selects unfinished projects and reports actual learning st
 });
 
 test('week 6 home: choose, edit, validate, save, resume, rename, switch curriculum and restore after login',{timeout:20000},async t=>{
-  const {w,q,login,navigate,tick,state,click,errors}=await createApp(t,{onboarding:true});
+  const {w,q,login,navigate,state,click,errors}=await createApp(t,{onboarding:true});
   w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({},{get:()=>()=>{}});
   const submit=selector=>q(selector).dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
   assert.equal(w.document.querySelectorAll('.side-nav a').length,4);
   assert.equal(q('.badge'),null);
   await navigate('learn');assert.equal(q('#auth-form'),null);
-  q('[data-learning-path=numbers]').click();await wait(60);tick(1);
+  q('[data-learning-path=numbers]').click();await wait(60);
   assert.equal(w.location.hash,'#/');assert.match(q('#game-idea').value,/پازل اعداد/);
   assert.equal(w.document.activeElement,q('#game-idea'));
   q('#game-idea').value=' ';submit('#idea-form');assert.equal(q('#game-idea').getAttribute('aria-invalid'),'true');
