@@ -2,7 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {createApp,wait} from './support/auth-fixture.mjs';
 test('authenticated workshop: destination resume, onboarding, blocks, undo, autosave, keyboard, win, tabs and projects',{timeout:20000},async t=>{
  const {w,q,click,login,navigate,tick,state,errors}=await createApp(t);
- assert.match(q('h1').textContent,/بازی‌سازی/);click('start');await wait(50);assert.ok(q('[role="dialog"]'));await login();await wait(250);
+ assert.match(q('h1').textContent,/بازی خودت/);await navigate('learn');click('lesson');await wait(50);assert.ok(q('[role="dialog"]'));await login();await wait(250);
 assert.match(q('#modal-title').textContent,/خوش آمدی/);click('finish-onboarding');await wait(40);
  assert.match(q('h1').textContent,/سفر ستاره/);assert.match(q('#save-status').textContent,/در حساب شما/);
  const jump=q('#setting-jump');jump.value='989890';jump.dispatchEvent(new w.Event('input',{bubbles:true}));assert.equal(jump.getAttribute('aria-invalid'),'true');click('run');assert.equal(q('#run-state').textContent,'آماده');
@@ -15,7 +15,7 @@ assert.match(q('#modal-title').textContent,/خوش آمدی/);click('finish-onbo
  key('keydown','ArrowRight','ArrowRight');tick(50);click('stop');assert.equal(q('#run-state').textContent,'متوقف');const oldTime=q('#elapsed').textContent;tick(20);assert.equal(q('#elapsed').textContent,oldTime);
  click('restart');assert.equal(q('#score').textContent,'۰');assert.equal(q('#elapsed').textContent,'۰۰:۰۰');key('keydown','ArrowRight','ArrowRight');tick(112);const space=new w.KeyboardEvent('keydown',{key:' ',code:'Space',bubbles:true,cancelable:true});q('#game-stage').dispatchEvent(space);assert.equal(space.defaultPrevented,true);tick(260);await wait(80);
  assert.match(q('#modal-title').textContent,/آفرین کاربر آزمایشی/);assert.match(q('[data-action="lesson"]').textContent,/رفتن به مرحله بعدی/);assert.equal(q('#score').textContent,'۱۰');assert.equal(q('#run-state').textContent,'موفق');assert.equal(state.progress['first-star'].status,'completed');
- click('lesson');await wait(150);assert.match(q('.eyebrow').textContent,/پرش دقیق/);assert.match(q('#hopi-feedback').textContent,/ارتفاع/);
+ click('lesson');await wait(150);assert.match(q('#main-content').textContent,/پرش دقیق/);assert.match(q('#hopi-feedback').textContent,/ارتفاع/);
  await navigate('projects');click('rename-project');q('#project-title').value='<img src=x onerror=alert(1)>';q('#rename-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await wait(50);assert.equal(w.document.querySelectorAll('img').length,0);assert.match(q('.feature-card h2').textContent,/<img/);
  click('delete-project');click('close-modal');assert.equal(state.projects.length,2);click('delete-project');click('confirm-delete');await wait(50);assert.equal(state.projects.length,1);
  assert.ok(q('.mobile-nav'));assert.equal(w.localStorage.getItem('hplgame-guest-v2'),null);assert.deepEqual(errors,[]);

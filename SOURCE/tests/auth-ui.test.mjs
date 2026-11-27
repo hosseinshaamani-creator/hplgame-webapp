@@ -2,7 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {createApp,wait} from './support/auth-fixture.mjs';
 test('OTP registration/login, auth wall, live validation, eye toggle and duplicate/network errors',{timeout:20000},async t=>{
  const {w,q,fill,click,submit,navigate,state,requests,errors}=await createApp(t,{onboarding:true});
- click('start');await wait(50);assert.ok(q('[role="dialog"]'));assert.equal(q('#game-stage'),null);assert.equal(q('#auth-password'),null);
+ click('coach');await wait(50);assert.ok(q('[role="dialog"]'));assert.equal(q('#game-stage'),null);assert.equal(q('#auth-password'),null);
  click('cancel-auth');await wait(40);assert.equal(q('[role="dialog"]'),null);assert.equal(q('#game-stage'),null);
  await navigate('signup');fill('fullName','ا');fill('email','invalid');fill('phone','12');fill('password','short');fill('confirm','x');submit();
  assert.match(q('#auth-error-fullName').textContent,/نام کامل/);assert.match(q('#auth-error-email').textContent,/معتبر/);assert.match(q('#auth-error-phone').textContent,/۱۱ رقم/);assert.equal(requests.some(r=>r.path.endsWith('/signup')),false);

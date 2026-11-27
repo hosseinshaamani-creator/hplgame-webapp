@@ -33,14 +33,14 @@ test('auth modal validates email/password, persists a local session, rejects wro
  w.document.querySelector('[data-proto-auth]').click();q('[data-auth-tab=signup]').click();q('#proto-name').value='تکراری';q('#proto-email').value='second@example.test';q('#proto-password').value=q('#proto-confirm').value='DemoTest42!';await auth();assert.match(q('[role=alert]').textContent,/قبلاً/);
 });
 
-test('hero input and all quick pills connect directly to coach, preserve first idea and enforce free quota',async t=>{
+test('hero input and editable presets connect to coach on submission, preserve first idea and enforce free quota',async t=>{
  const {w,q,mod,ctx,saved}=await setup(t);const discovery=await import('../lib/discovery.js?integration='+Math.random());
  function home(){q('main').innerHTML=discovery.discoveryHome();discovery.bindDiscovery({...ctx,onSubmitIdea:text=>mod.submitPrototypeIdea(text,ctx)});mod.bindPrototype(ctx);}
  home();q('#game-idea').value='دوز <img src=x onerror=alert(1)>';q('#idea-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
  assert.equal(w.location.hash,'#/studio/coach');assert.equal(q('.chat-message.user span').textContent,'دوز <img src=x onerror=alert(1)>');assert.equal(q('img'),null);assert.match(q('.proto-sandbox h2').textContent,/دوز/);
- const firstId=saved().guestGames[0].id;home();q('[data-example]').click();assert.ok(q('[role=dialog]'));assert.equal(saved().guestGames.length,1);assert.equal(saved().guestGames[0].id,firstId);q('#proto-free').click();
+ const firstId=saved().guestGames[0].id;home();q('[data-example]').click();q('#idea-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));assert.ok(q('[role=dialog]'));assert.equal(saved().guestGames.length,1);assert.equal(saved().guestGames[0].id,firstId);q('#proto-free').click();
  // Each preset is also tested as the first free game in an isolated browser state.
- for(let i=0;i<3;i++){const isolated=await setup(t);const d=await import('../lib/discovery.js?pill='+Math.random());isolated.q('main').innerHTML=d.discoveryHome();d.bindDiscovery({...isolated.ctx,onSubmitIdea:text=>isolated.mod.submitPrototypeIdea(text,isolated.ctx)});isolated.w.document.querySelectorAll('[data-example]')[i].click();assert.equal(isolated.w.location.hash,'#/studio/coach');assert.match(isolated.q('.proto-sandbox h2').textContent,[/دوز/,/مار/,/فلپی/][i]);assert.equal(isolated.saved().guestGames.length,1);}
+ for(let i=0;i<3;i++){const isolated=await setup(t);const d=await import('../lib/discovery.js?pill='+Math.random());isolated.q('main').innerHTML=d.discoveryHome();d.bindDiscovery({...isolated.ctx,onSubmitIdea:text=>isolated.mod.submitPrototypeIdea(text,isolated.ctx)});isolated.w.document.querySelectorAll('[data-example]')[i].click();isolated.q('#idea-form').dispatchEvent(new isolated.w.Event('submit',{bubbles:true,cancelable:true}));assert.equal(isolated.w.location.hash,'#/studio/coach');assert.match(isolated.q('.proto-sandbox h2').textContent,[/دوز/,/مار/,/فلپی/][i]);assert.equal(isolated.saved().guestGames.length,1);}
 });
 
 test('contextual tutor actions, chat and snake sandbox survive rerenders and handle win/collision/restart',async t=>{

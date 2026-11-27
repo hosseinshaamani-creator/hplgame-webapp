@@ -7,7 +7,7 @@ test('week 5: password login, recovery request, profile, cloud coach saving and 
   await navigate('forgot');fill('email','bad');submit();assert.match(q('#auth-error-email').textContent,/معتبر/);
   fill('email','a@example.test');submit();await wait(80);assert.ok(requests.some(r=>r.path.endsWith('/recover')));assert.match(q('#auth-message').textContent,/پیوند بازیابی/);
   await navigate('password-login');fill('email','a@example.test');fill('password','wrong');submit();await wait(80);assert.match(q('#auth-message').textContent,/درست نیست/);
-  fill('password','A-long-test-pass-123!');submit();await wait(200);assert.ok(q('#profile-form'));
+  fill('password','A-long-test-pass-123!');submit();await wait(200);await navigate('dashboard');assert.ok(q('#profile-form'));
   q('[name=displayName]').value='نام تازه';q('#profile-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await wait(60);
   assert.equal(state.profile.display_name,'نام تازه');assert.match(q('.profile-card').textContent,/نام تازه/);
   await navigate('studio/coach');q('#proto-idea').value='پازل اعداد';q('#proto-first-idea').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await wait(70);
